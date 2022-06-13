@@ -1,0 +1,38 @@
+desc:ENSLL Basic Delay
+
+slider1:delay_time=0<0,1000,1>Time (ms)
+
+in_pin:left input
+in_pin:right input
+out_pin:left output
+out_pin:right output
+
+@init
+
+delayBuf = 0;
+bufSize = 2*srate;
+delayLength = 2*srate*delay_time/1000;
+writePos = 0;
+readPos = writePos-delayLength;
+
+
+@slider
+delayLength = 2* srate*delay_time/1000;
+readPos = writePos-delayLength;
+
+@block
+
+
+@sample
+
+writePos > bufSize ? writePos = 0;
+readPos > bufSize ? readPos = 0;
+
+delayBuf[writePos] = spl0;
+delayBuf[writePos+1] = spl1;
+
+spl0 = delayBuf[readPos];
+spl1 = delayBuf[readPos+1];
+
+writePos += 2;
+readPos += 2;

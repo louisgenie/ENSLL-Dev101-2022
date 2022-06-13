@@ -1,0 +1,33 @@
+desc:ENSLL Sample delay
+
+slider1:delay=0<0,960,1>Delay (smpl)
+
+in_pin:left input
+in_pin:right input
+out_pin:left output
+out_pin:right output
+
+@init
+buf = 0;
+bufSize = srate*2;
+recPos = 0;
+readPos = recPos-delay;
+
+@slider
+readPos = recPos-delay;
+
+@block
+
+@sample
+recPos > bufSize ? recPos = 0;
+readPos > bufSize ? readPos = 0;
+
+
+buf[recPos]=spl0;
+buf[recPos+1]=spl1;
+
+spl0=buf[readPos];
+spl1=buf[readPos+1];
+
+readPos += 2;
+recPos += 2;
