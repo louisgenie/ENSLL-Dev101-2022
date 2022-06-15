@@ -1,0 +1,27 @@
+desc:Tremolouis
+slider1:freq=5<0.5,42,0.5>Freq (Hz)
+slider2:depth=0<0,1,0.01> Depth
+slider3:width=0<0,100,1> Width(%)
+
+in_pin:left input
+in_pin:right input
+out_pin:left output
+out_pin:right output
+
+@init
+f = 1;
+t = 1;
+d = 0;
+w = 0;
+
+@slider
+f = $pi*2*freq/srate;
+d = depth;
+w = $pi*width/100;
+
+@sample
+spl0 *=  d * (sin(f*t)+1)*0.5 + (1 - d);
+spl1 *=  d * (sin(f*t + w)+1)*0.5 + (1 - d);
+
+t += 1;
+

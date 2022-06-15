@@ -1,0 +1,81 @@
+desc: very new effect
+
+import cookdsp.jsfx-inc
+
+slider1:width=0<0,100,1>Width (%)
+//slider2:1000<100,10000>Notch Frequency (Hz)
+//slider3:1000<100,2000>Bandwidth (Hz)
+slider4:1<0,2,1{Center Delayed, Sides Delayed,  All Pass}>Mode 
+
+slider2:3500<50,10000>Cutoff Frequency In Hz
+slider3:1<0.01,10>Interpolation Time In Seconds
+
+in_pin:left input
+in_pin:right input
+out_pin:left output
+out_pin:right output
+
+@init
+apL.apass(100, 2000, 0.1);
+apR.apass(100, 2000, 0.1);
+
+buf = 0;
+i = 0;
+w = 0;
+del = 100;
+left = 0;
+right = 0;
+center = 0;
+sides = 0;
+
+// Initializes the interpolator
+interp.lop(1.0 / slider3);
+// Initializes the filters
+filt1.hip(slider2);
+
+
+@slider
+w = width;
+mode = slider4;
+
+apL.apass_set_freq(100);
+apR.apass_set_freq(100);
+apL.apass_set_bw(2000);
+apR.apass_set_bw(2000);
+apL.apass_set_feed(0.1);
+apR.apass_set_feed(0.1);
+
+// Sets the interpolator's frequency
+interp.lop_set_freq(1.0 / slider3);
+
+@sample
+buf[i] = spl1;
+
+// Compute and sets the filters's frequency
+freq = interp.lop_do(slider2);
+filt1.hip_set_freq(freq);
+
+
+
+i>=del ? (
+  !mode ? (
+    center = buf[i-del];
+    sides = buf[i];
+    ):(
+      center = buf[i];
+      mode==1 ? sides = buf[i-del] : sides =  (apL.apass_do(buf[i]) +  apR.apass_do(buf[i]))*0.5;
+      );)
+    :(
+    center = 0; 
+    sides = 0;
+    );
+
+spl0 = (center + w *  filt1.hip_do(sides) * 0.01)*0.5;
+spl1 = (center - w *  filt1.hip_do(sides) * 0.01)*0.5;
+
+i+=1; i > 100000 ? i = 0 ; 
+
+del += 0; del > 200 ? del = 100;
+
+
+
